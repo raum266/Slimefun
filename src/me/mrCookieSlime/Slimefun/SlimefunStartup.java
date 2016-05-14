@@ -4,15 +4,37 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.world.WorldLoadEvent;
+import org.bukkit.event.world.WorldUnloadEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import me.mrCookieSlime.CSCoreLibPlugin.CSCoreLib;
 import me.mrCookieSlime.CSCoreLibPlugin.PluginUtils;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
 import me.mrCookieSlime.CSCoreLibPlugin.general.Clock;
+import me.mrCookieSlime.CSCoreLibPlugin.general.Reflection.ReflectionUtils;
 import me.mrCookieSlime.CSCoreLibSetup.CSCoreLibLoader;
 import me.mrCookieSlime.Slimefun.AncientAltar.Pedestals;
 import me.mrCookieSlime.Slimefun.Commands.SlimefunCommand;
@@ -57,21 +79,6 @@ import me.mrCookieSlime.Slimefun.listeners.TalismanListener;
 import me.mrCookieSlime.Slimefun.listeners.TeleporterListener;
 import me.mrCookieSlime.Slimefun.listeners.ToolListener;
 
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.world.WorldLoadEvent;
-import org.bukkit.event.world.WorldUnloadEvent;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
-
 public class SlimefunStartup extends JavaPlugin {
 	
 	public static SlimefunStartup instance;
@@ -91,6 +98,22 @@ public class SlimefunStartup extends JavaPlugin {
 	public void onEnable() {
 		CSCoreLibLoader loader = new CSCoreLibLoader(this);
 		if (loader.load()) {
+			
+			if (!ReflectionUtils.getVersion().startsWith("v1_9_")) {
+				System.err.println("### Slimefun failed to load!");
+				System.err.println("###");
+				System.err.println("### You are using the wrong Version of Minecraft!!!");
+				System.err.println("###");
+				System.err.println("### You are using Minecraft " + ReflectionUtils.getVersion());
+				System.err.println("### but Slimefun v" + getDescription().getVersion() + " requires you to be using");
+				System.err.println("### Minecraft 1.9.X");
+				System.err.println("###");
+				System.err.println("### Please use an older Version of Slimefun and disable auto-updating");
+				System.err.println("### or consider updating your Server Software.");
+				getServer().getPluginManager().disablePlugin(this);
+				return;
+			}
+			
 			instance = this;
 			System.out.println("[Slimefun] Loading Files...");
 			Files.cleanup();
@@ -120,6 +143,7 @@ public class SlimefunStartup extends JavaPlugin {
 			if (!new File("data-storage/Slimefun/block-backups").exists()) new File("data-storage/Slimefun/block-backups").mkdirs();
 			if (!new File("plugins/Slimefun/scripts").exists()) new File("plugins/Slimefun/scripts").mkdirs();
 			if (!new File("plugins/Slimefun/generators").exists()) new File("plugins/Slimefun/generators").mkdirs();
+			if (!new File("plugins/Slimefun/error-reports").exists()) new File("plugins/Slimefun/error-reports").mkdirs();
 			
 			SlimefunManager.plugin = this;
 			
@@ -308,6 +332,26 @@ public class SlimefunStartup extends JavaPlugin {
 			BlockStorage storage = BlockStorage.getStorage(world);
 			if (storage != null) storage.save(true);
 			else System.err.println("[Slimefun] Could not save Slimefun Blocks for World \"" + world.getName() + "\"");
+		}
+		
+		File folder = new File("data-storage/Slimefun/block-backups");
+		List<File> backups = Arrays.asList(folder.listFiles());
+		if (backups.size() > 20) {
+			Collections.sort(backups, new Comparator<File>() {
+
+				@Override
+				public int compare(File f1, File f2) {
+					try {
+						return (int) (new SimpleDateFormat("yyyy-MM-dd-HH-mm").parse(f1.getName().replace(".zip", "")).getTime() - new SimpleDateFormat("yyyy-MM-dd-HH-mm").parse(f2.getName().replace(".zip", "")).getTime());
+					} catch (ParseException e) {
+						return 0;
+					}
+				}
+			});
+			
+			for (int i = backups.size() - 20; i > 0; i--) {
+				backups.get(i).delete();
+			}
 		}
 		
 		File file = new File("data-storage/Slimefun/block-backups/" + Clock.format(new Date()) + ".zip");
