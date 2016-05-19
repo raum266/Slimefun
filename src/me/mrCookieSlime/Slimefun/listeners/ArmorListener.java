@@ -33,7 +33,7 @@ public class ArmorListener implements Listener {
 	}
 	
 	@SuppressWarnings("deprecation")
-	@EventHandler(priority=EventPriority.MONITOR)
+	@EventHandler(priority=EventPriority.LOWEST)
 	public void onDamage(EntityDamageEvent e) {
 		if (e.getEntity() instanceof Player && !e.isCancelled()) {
 			Player p = (Player) e.getEntity();

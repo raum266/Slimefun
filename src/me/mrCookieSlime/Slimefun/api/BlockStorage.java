@@ -153,7 +153,7 @@ public class BlockStorage {
 	}
 	
 	public void save(boolean remove) {
-		System.out.println("[Slimefun] Saving Blocks for World \"" + world.getName() + "\"");
+		//System.out.println("[Slimefun] Saving Blocks for World \"" + world.getName() + "\"");
 		
 		Map<String, Config> cache = new HashMap<String, Config>(cache_blocks);
 		

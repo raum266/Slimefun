@@ -146,8 +146,7 @@ public class SlimefunItems {
 	public static ItemStack EXPLOSIVE_PICKAXE = new CustomItem(Material.DIAMOND_PICKAXE, "&eExplosive Pickaxe", 0, new String[] {"", "&rAllows you to mine a good bit", "&rof Blocks at once...", "", "&9Works with Fortune"});
 	public static ItemStack PICKAXE_OF_THE_SEEKER = new CustomItem(Material.DIAMOND_PICKAXE, "&aPickaxe of the Seeker", 0, new String[] {"&rWill always point you to the nearest Ore", "&rbut might get damaged when doing it", "", "&7&eRight Click&7 to be pointed to the nearest Ore"});
 	public static ItemStack COBALT_PICKAXE = new CustomItem(Material.IRON_PICKAXE, "&9Cobalt Pickaxe", 0, new String[] {}, new String[] {"DURABILITY-3", "DIG_SPEED-6"});
-	public static ItemStack PICKAXE_OF_VEIN_MINING = new CustomItem(Material.DIAMOND_PICKAXE, "&ePickaxe of Vein Mining", 0, new String[] {"", "&rThis Pickaxe will dig out", "&rwhole Veins of Ores..."});
-	
+	public static ItemStack PICKAXE_OF_VEIN_MINING = new CustomItem(Material.DIAMOND_PICKAXE, "&ePickaxe of Vein Mining", 0, new String[] {"", "&rThis Pickaxe will dig out", "&rwhole Veins of Ores..."}, new String[] {"DIG_SPEED-1"});
 	/*		 Armor 		*/
 	public static ItemStack GLOWSTONE_HELMET = new CustomArmor(new CustomItem(Material.LEATHER_HELMET, "&e&lGlowstone Helmet", 0, new String[] {"", "&a&oShining like the sun!", "", "&9+ Night Vision"}), Color.YELLOW);
 	public static ItemStack GLOWSTONE_CHESTPLATE = new CustomArmor(new CustomItem(Material.LEATHER_CHESTPLATE, "&e&lGlowstone Chestplate", 0, new String[] {"", "&a&oShining like the sun!", "", "&9+ Night Vision"}), Color.YELLOW);

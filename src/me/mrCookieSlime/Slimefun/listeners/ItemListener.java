@@ -280,12 +280,32 @@ public class ItemListener implements Listener {
 		}
 	}
 	
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void nomcMMOAnvil(PlayerInteractEvent e) {
+		if ( e.getClickedBlock() == null )
+			return;
+		
+		Block b =  e.getClickedBlock();
+		
+		if ( b.getType() != Material.IRON_BLOCK )
+			return;
+		
+		if ( e.getAction() == Action.RIGHT_CLICK_BLOCK)
+		{
+			if (SlimefunItem.getByItem(e.getPlayer().getItemInHand()) != null) {
+				Messages.local.sendTranslation( e.getPlayer(), "anvil.not-working", true);
+				e.setCancelled(true);
+				return;
+			}
+		}
+	}
+	
 	@EventHandler
     public void onAnvil(InventoryClickEvent e) {
         if (e.getRawSlot() == 2 && e.getWhoClicked() instanceof Player && e.getInventory().getType() == InventoryType.ANVIL) {
         	if (SlimefunItem.getByItem(e.getInventory().getContents()[0]) != null) {
             	e.setCancelled(true);
-                Messages.local.sendTranslation((Player) e.getWhoClicked(), "anvil.not-working", true);
+            	Messages.local.sendTranslation((Player) e.getWhoClicked(), "anvil.not-working", true);
             }
         }
     }

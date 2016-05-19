@@ -2482,24 +2482,31 @@ public class SlimefunSetup {
 				else return false;
 			}
 		});
-		
+	
 		new SlimefunItem(Categories.TOOLS, SlimefunItems.PICKAXE_OF_VEIN_MINING, "PICKAXE_OF_VEIN_MINING", RecipeType.MAGIC_WORKBENCH,
 		new ItemStack[] {new ItemStack(Material.EMERALD_ORE), SlimefunItems.SYNTHETIC_DIAMOND, new ItemStack(Material.EMERALD_ORE), null, SlimefunItems.GILDED_IRON, null, null, SlimefunItems.GILDED_IRON, null})
+		
+		
 		.register(true, new BlockBreakHandler() {
-			
+		
 			@Override
 			public boolean onBlockBreak(BlockBreakEvent e, ItemStack item, int fortune, List<ItemStack> drops) {
 				if (SlimefunManager.isItemSimiliar(e.getPlayer().getItemInHand(), SlimefunItems.PICKAXE_OF_VEIN_MINING, true) && e.getBlock().getType().toString().endsWith("_ORE")) {
 					List<Location> blocks = new ArrayList<Location>();
 					Vein.calculate(e.getBlock().getLocation(), e.getBlock().getLocation(), blocks, 32);
+					int num = 0;
 					for (Location block: blocks) {
 						Block b = block.getBlock();
+						num++;
 						b.getWorld().playEffect(b.getLocation(), Effect.STEP_SOUND, b.getType());
 						for (ItemStack drop: b.getDrops()) {
 							b.getWorld().dropItemNaturally(b.getLocation(), b.getType().toString().endsWith("_ORE") ? new CustomItem(drop, fortune): drop);
 						}
 						b.setType(Material.AIR);
 					}
+					ItemStack pick = e.getPlayer().getItemInHand();
+					pick.setDurability( (short) (pick.getDurability() + num));
+
 					return true;
 				}
 				else return false;
@@ -2986,7 +2993,7 @@ public class SlimefunSetup {
 		});
 		
 		new SlimefunItem(Categories.MAGIC, SlimefunItems.ANCIENT_ALTAR, "ANCIENT_ALTAR", RecipeType.MAGIC_WORKBENCH,
-		new ItemStack[] {null, new ItemStack(Material.ENCHANTMENT_TABLE), null, SlimefunItems.MAGIC_LUMP_3, SlimefunItems.GOLD_8K, SlimefunItems.MAGIC_LUMP_3, new ItemStack(Material.OBSIDIAN), SlimefunItems.GOLD_8K, new ItemStack(Material.OBSIDIAN)})
+				new ItemStack[] {null, new ItemStack(Material.ENCHANTMENT_TABLE), null, SlimefunItems.MAGIC_LUMP_3, SlimefunItems.GOLD_8K, SlimefunItems.MAGIC_LUMP_3, new ItemStack(Material.OBSIDIAN), SlimefunItems.GOLD_8K, new ItemStack(Material.OBSIDIAN)})
 		.register(true);
 		
 		new SlimefunItem(Categories.BIRTHDAY, new CustomItem(new MaterialData(Material.CAKE), "§bBirthday Cake"), "BIRTHDAY_CAKE", RecipeType.ENHANCED_CRAFTING_TABLE,
