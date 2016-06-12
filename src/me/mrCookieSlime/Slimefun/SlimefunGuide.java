@@ -271,7 +271,8 @@ public class SlimefunGuide {
 			List<GuideHandler> handlers = Slimefun.guide_handlers2;
 			
 			int index = 9;
-			final int pages = ((categories.size() + handlers.size()) / category_size) + 1;
+			int pages = 1;
+			
 			for (int i = 0; i < 9; i++) {
 				menu.addItem(i, new CustomItem(new MaterialData(Material.STAINED_GLASS_PANE, (byte) 7), " "));
 				menu.addMenuClickHandler(i, new MenuClickHandler() {
@@ -294,35 +295,17 @@ public class SlimefunGuide {
 				});
 			}
 			
-			menu.addItem(46, new CustomItem(new MaterialData(Material.STAINED_GLASS_PANE, (byte) 5), "&r\u21E6 Previous Page", "", "&7(" + selected_page + " / " + pages + ")"));
-			menu.addMenuClickHandler(46, new MenuClickHandler() {
-				
-				@Override
-				public boolean onClick(Player arg0, int arg1, ItemStack arg2, ClickAction arg3) {
-					int next = selected_page - 1;
-					if (next < 1) next = pages;
-					if (next != selected_page) openMainMenu(p, survival, experimental, next);
-					return false;
-				}
-			});
+			int target = (category_size * (selected_page - 1)) - 1;
 			
-			menu.addItem(52, new CustomItem(new MaterialData(Material.STAINED_GLASS_PANE, (byte) 5), "&rNext Page \u21E8", "", "&7(" + selected_page + " / " + pages + ")"));
-			menu.addMenuClickHandler(52, new MenuClickHandler() {
-				
-				@Override
-				public boolean onClick(Player arg0, int arg1, ItemStack arg2, ClickAction arg3) {
-					int next = selected_page + 1;
-					if (next > pages) next = 1;
-					if (next != selected_page) openMainMenu(p, survival, experimental, next);
-					return false;
+			while (target < (categories.size() + handlers.size() - 1)) {
+				if (index >= category_size + 9) {
+					pages++;
+					break;
 				}
-			});
-			
-			int category_index = category_size * (selected_page - 1);
-			for (int i = 0; i < category_size; i++) {
-				int target = category_index + i;
-				if (target >= (categories.size() + handlers.size())) break;
-				else if (target >= categories.size()) {
+				
+				target++;
+				
+				if (target >= categories.size()) {
 					if (!survival) break;
 					index = handlers.get(target - categories.size()).next(p, index, menu);
 				}
@@ -390,7 +373,7 @@ public class SlimefunGuide {
 						for (Category parent: ((LockedCategory) category).getParents()) {
 							parents.add(parent.getItem().getItemMeta().getDisplayName());
 						}
-						menu.addItem(index, new CustomItem(Material.STAINED_GLASS_PANE, "&4LOCKED &7- &r" + category.getItem().getItemMeta().getDisplayName(), 14, parents.toArray(new String[parents.size()])));
+						menu.addItem(index, new CustomItem(Material.BARRIER, "&4LOCKED &7- &r" + category.getItem().getItemMeta().getDisplayName(), 0, parents.toArray(new String[parents.size()])));
 						menu.addMenuClickHandler(index, new MenuClickHandler() {
 							
 							@Override
@@ -402,6 +385,32 @@ public class SlimefunGuide {
 					}
 				}
 			}
+
+			final int finalPages = pages;
+			
+			menu.addItem(46, new CustomItem(new MaterialData(Material.STAINED_GLASS_PANE, (byte) 5), "&r\u21E6 Previous Page", "", "&7(" + selected_page + " / " + pages + ")"));
+			menu.addMenuClickHandler(46, new MenuClickHandler() {
+				
+				@Override
+				public boolean onClick(Player arg0, int arg1, ItemStack arg2, ClickAction arg3) {
+					int next = selected_page - 1;
+					if (next < 1) next = finalPages;
+					if (next != selected_page) openMainMenu(p, survival, experimental, next);
+					return false;
+				}
+			});
+			
+			menu.addItem(52, new CustomItem(new MaterialData(Material.STAINED_GLASS_PANE, (byte) 5), "&rNext Page \u21E8", "", "&7(" + selected_page + " / " + pages + ")"));
+			menu.addMenuClickHandler(52, new MenuClickHandler() {
+				
+				@Override
+				public boolean onClick(Player arg0, int arg1, ItemStack arg2, ClickAction arg3) {
+					int next = selected_page + 1;
+					if (next > finalPages) next = 1;
+					if (next != selected_page) openMainMenu(p, survival, experimental, next);
+					return false;
+				}
+			});
 			
 			menu.open(p);
 		}
@@ -618,11 +627,11 @@ public class SlimefunGuide {
 				int target = category_index + i;
 				if (target >= category.getItems().size()) break;
 				final SlimefunItem sfitem = category.getItems().get(target);
-				if (survival && !Slimefun.hasUnlocked(p, sfitem.getItem(), false) && sfitem.getResearch() != null) {
-					if (Slimefun.hasPermission(p, sfitem, false)) {
-						if (Slimefun.isEnabled(p, sfitem, false)) {
+				if (Slimefun.isEnabled(p, sfitem, false)) {
+					if (survival && !Slimefun.hasUnlocked(p, sfitem.getItem(), false) && sfitem.getResearch() != null) {
+						if (Slimefun.hasPermission(p, sfitem, false)) {
 							final int cost = SlimefunStartup.getResearchCfg().getInt(sfitem.getResearch().getID() + ".cost");
-							menu.addItem(index, new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(sfitem.getItem(), false), 14, new String[] {"&4&lLOCKED", "", "&a> Click to unlock", "", "&7Cost: &b" + cost + " Level"}));
+							menu.addItem(index, new CustomItem(Material.BARRIER, StringUtils.formatItemName(sfitem.getItem(), false), 0, new String[] {"&4&lLOCKED", "", "&a> Click to unlock", "", "&7Cost: &b" + cost + " Level"}));
 							menu.addMenuClickHandler(index, new MenuClickHandler() {
 								
 								@Override
@@ -661,31 +670,31 @@ public class SlimefunGuide {
 							});
 							index++;
 						}
+						else {
+							menu.addItem(index, new CustomItem(Material.BARRIER, StringUtils.formatItemName(sfitem.getItem(), false), 0, new String[] {"", "&rYou do not have Permission", "&rto access this Item"}));
+							menu.addMenuClickHandler(index, new MenuClickHandler() {
+								
+								@Override
+								public boolean onClick(Player arg0, int arg1, ItemStack arg2, ClickAction arg3) {
+									return false;
+								}
+							});
+							index++;
+						}
 					}
 					else {
-						menu.addItem(index, new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(sfitem.getItem(), false), 14, new String[] {"", "&rYou do not have Permission", "&rto access this Item"}));
+						menu.addItem(index, sfitem.getItem());
 						menu.addMenuClickHandler(index, new MenuClickHandler() {
 							
 							@Override
-							public boolean onClick(Player arg0, int arg1, ItemStack arg2, ClickAction arg3) {
+							public boolean onClick(Player p, int slot, ItemStack item, ClickAction action) {
+								if (survival) displayItem(p, item, true, experimental, 0);
+								else p.getInventory().addItem(item);
 								return false;
 							}
 						});
 						index++;
 					}
-				}
-				else {
-					menu.addItem(index, sfitem.getItem());
-					menu.addMenuClickHandler(index, new MenuClickHandler() {
-						
-						@Override
-						public boolean onClick(Player p, int slot, ItemStack item, ClickAction action) {
-							if (survival) displayItem(p, item, true, experimental, 0);
-							else p.getInventory().addItem(item);
-							return false;
-						}
-					});
-					index++;
 				}
 			}
 			
@@ -846,7 +855,7 @@ public class SlimefunGuide {
 			});
 		}
 		
-		menu.addItem(3, Slimefun.hasUnlocked(p, recipe[0], false) ? recipe[0]: new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(recipe[0], false), 14, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[0]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
+		menu.addItem(3, Slimefun.hasUnlocked(p, recipe[0], false) ? recipe[0]: new CustomItem(Material.BARRIER, StringUtils.formatItemName(recipe[0], false), 0, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[0]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
 		menu.addMenuClickHandler(3, new MenuClickHandler() {
 			
 			@Override
@@ -856,7 +865,7 @@ public class SlimefunGuide {
 			}
 		});
 		
-		menu.addItem(4, Slimefun.hasUnlocked(p, recipe[1], false) ? recipe[1]: new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(recipe[1], false), 14, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[1]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
+		menu.addItem(4, Slimefun.hasUnlocked(p, recipe[1], false) ? recipe[1]: new CustomItem(Material.BARRIER, StringUtils.formatItemName(recipe[1], false), 0, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[1]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
 		menu.addMenuClickHandler(4, new MenuClickHandler() {
 			
 			@Override
@@ -866,7 +875,7 @@ public class SlimefunGuide {
 			}
 		});
 		
-		menu.addItem(5, Slimefun.hasUnlocked(p, recipe[2], false) ? recipe[2]: new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(recipe[2], false), 14, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[2]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
+		menu.addItem(5, Slimefun.hasUnlocked(p, recipe[2], false) ? recipe[2]: new CustomItem(Material.BARRIER, StringUtils.formatItemName(recipe[2], false), 0, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[2]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
 		menu.addMenuClickHandler(5, new MenuClickHandler() {
 			
 			@Override
@@ -924,7 +933,7 @@ public class SlimefunGuide {
 			}
 		});
 		
-		menu.addItem(12, Slimefun.hasUnlocked(p, recipe[3], false) ? recipe[3]: new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(recipe[3], false), 14, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[3]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
+		menu.addItem(12, Slimefun.hasUnlocked(p, recipe[3], false) ? recipe[3]: new CustomItem(Material.BARRIER, StringUtils.formatItemName(recipe[3], false), 0, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[3]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
 		menu.addMenuClickHandler(12, new MenuClickHandler() {
 			
 			@Override
@@ -934,7 +943,7 @@ public class SlimefunGuide {
 			}
 		});
 		
-		menu.addItem(13, Slimefun.hasUnlocked(p, recipe[4], false) ? recipe[4]: new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(recipe[4], false), 14, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[4]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
+		menu.addItem(13, Slimefun.hasUnlocked(p, recipe[4], false) ? recipe[4]: new CustomItem(Material.BARRIER, StringUtils.formatItemName(recipe[4], false), 0, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[4]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
 		menu.addMenuClickHandler(13, new MenuClickHandler() {
 			
 			@Override
@@ -944,7 +953,7 @@ public class SlimefunGuide {
 			}
 		});
 		
-		menu.addItem(14, Slimefun.hasUnlocked(p, recipe[5], false) ? recipe[5]: new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(recipe[5], false), 14, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[5]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
+		menu.addItem(14, Slimefun.hasUnlocked(p, recipe[5], false) ? recipe[5]: new CustomItem(Material.BARRIER, StringUtils.formatItemName(recipe[5], false), 0, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[5]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
 		menu.addMenuClickHandler(14, new MenuClickHandler() {
 			
 			@Override
@@ -963,7 +972,7 @@ public class SlimefunGuide {
 			}
 		});
 		
-		menu.addItem(21, Slimefun.hasUnlocked(p, recipe[6], false) ? recipe[6]: new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(recipe[6], false), 14, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[6]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
+		menu.addItem(21, Slimefun.hasUnlocked(p, recipe[6], false) ? recipe[6]: new CustomItem(Material.BARRIER, StringUtils.formatItemName(recipe[6], false), 0, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[6]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
 		menu.addMenuClickHandler(21, new MenuClickHandler() {
 			
 			@Override
@@ -973,7 +982,7 @@ public class SlimefunGuide {
 			}
 		});
 		
-		menu.addItem(22, Slimefun.hasUnlocked(p, recipe[7], false) ? recipe[7]: new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(recipe[7], false), 14, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[7]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
+		menu.addItem(22, Slimefun.hasUnlocked(p, recipe[7], false) ? recipe[7]: new CustomItem(Material.BARRIER, StringUtils.formatItemName(recipe[7], false), 0, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[7]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
 		menu.addMenuClickHandler(22, new MenuClickHandler() {
 			
 			@Override
@@ -983,7 +992,7 @@ public class SlimefunGuide {
 			}
 		});
 		
-		menu.addItem(23, Slimefun.hasUnlocked(p, recipe[8], false) ? recipe[8]: new CustomItem(Material.STAINED_GLASS_PANE, StringUtils.formatItemName(recipe[8], false), 14, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[8]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
+		menu.addItem(23, Slimefun.hasUnlocked(p, recipe[8], false) ? recipe[8]: new CustomItem(Material.BARRIER, StringUtils.formatItemName(recipe[8], false), 0, new String[] {"&4&lLOCKED", "", Slimefun.hasPermission(p, SlimefunItem.getByItem(recipe[8]), false) ? "&rNeeds to be unlocked elsewhere" : "&rNo Permission"}));
 		menu.addMenuClickHandler(23, new MenuClickHandler() {
 			
 			@Override
