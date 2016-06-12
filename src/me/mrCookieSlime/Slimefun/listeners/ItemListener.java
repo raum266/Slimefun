@@ -47,6 +47,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 public class ItemListener implements Listener {
@@ -190,11 +191,11 @@ public class ItemListener implements Listener {
 			if (e.getClickedBlock() != null && BlockStorage.hasBlockInfo(e.getClickedBlock())) {
 				String id = BlockStorage.checkID(e.getClickedBlock());
 				if (BlockMenuPreset.isInventory(id)) {
-					if (SlimefunManager.isItemSimiliar(item, SlimefunItems.CARGO_INPUT, true));
-					else if (SlimefunManager.isItemSimiliar(item, SlimefunItems.CARGO_OUTPUT, true));
-					else if (SlimefunManager.isItemSimiliar(item, SlimefunItems.CARGO_OUTPUT_ADVANCED, true));
-					else if (SlimefunManager.isItemSimiliar(item, SlimefunItems.CT_IMPORT_BUS, true));
-					else if (SlimefunManager.isItemSimiliar(item, SlimefunItems.CT_EXPORT_BUS, true));
+					if (canPlaceBlock(p, e.getClickedBlock().getRelative(e.getParentEvent().getBlockFace())) && SlimefunManager.isItemSimiliar(item, SlimefunItems.CARGO_INPUT, true));
+					else if (canPlaceBlock(p, e.getClickedBlock().getRelative(e.getParentEvent().getBlockFace())) && SlimefunManager.isItemSimiliar(item, SlimefunItems.CARGO_OUTPUT, true));
+					else if (canPlaceBlock(p, e.getClickedBlock().getRelative(e.getParentEvent().getBlockFace())) && SlimefunManager.isItemSimiliar(item, SlimefunItems.CARGO_OUTPUT_ADVANCED, true));
+					else if (canPlaceBlock(p, e.getClickedBlock().getRelative(e.getParentEvent().getBlockFace())) && SlimefunManager.isItemSimiliar(item, SlimefunItems.CT_IMPORT_BUS, true));
+					else if (canPlaceBlock(p, e.getClickedBlock().getRelative(e.getParentEvent().getBlockFace())) && SlimefunManager.isItemSimiliar(item, SlimefunItems.CT_EXPORT_BUS, true));
 					else {
 						e.setCancelled(true);
 						BlockStorage storage = BlockStorage.getStorage(e.getClickedBlock().getWorld());
@@ -214,6 +215,10 @@ public class ItemListener implements Listener {
 		else e.setCancelled(true);
 	}
 	
+	private boolean canPlaceBlock(Player p, Block relative) {
+		return p.isSneaking() && relative.getType().equals(Material.AIR);
+	}
+
 	@EventHandler
 	public void onEat(PlayerItemConsumeEvent e) {
 		if (e.getItem() != null) {
@@ -221,8 +226,10 @@ public class ItemListener implements Listener {
 			ItemStack item = e.getItem();
 			if (Slimefun.hasUnlocked(p, item, true)) {
 				if (SlimefunManager.isItemSimiliar(item, SlimefunItems.MONSTER_JERKY, true)) {
+					e.setCancelled(true);
 					PlayerInventory.consumeItemInHand(p);
-					e.setItem(new ItemStack(Material.APPLE));
+					PlayerInventory.update(p);
+					p.addPotionEffect(new PotionEffect(PotionEffectType.SATURATION, 5, 0));
 				}
 				else if (SlimefunManager.isItemSimiliar(item, SlimefunItems.FORTUNE_COOKIE, true)) p.sendMessage(ChatColor.translateAlternateColorCodes('&', Messages.local.getTranslation("messages.fortune-cookie").get(CSCoreLib.randomizer().nextInt(Messages.local.getTranslation("messages.fortune-cookie").size()))));
 				else if (SlimefunManager.isItemSimiliar(item, SlimefunItems.BEEF_JERKY, true)) p.setSaturation((Integer) Slimefun.getItemValue("BEEF_JERKY", "Saturation"));
@@ -283,7 +290,7 @@ public class ItemListener implements Listener {
 	@EventHandler
     public void onAnvil(InventoryClickEvent e) {
         if (e.getRawSlot() == 2 && e.getWhoClicked() instanceof Player && e.getInventory().getType() == InventoryType.ANVIL) {
-        	if (SlimefunItem.getByItem(e.getInventory().getContents()[0]) != null) {
+        	if (SlimefunItem.getByItem(e.getInventory().getContents()[0]) != null && !SlimefunItem.isDisabled(e.getInventory().getContents()[0])) {
             	e.setCancelled(true);
                 Messages.local.sendTranslation((Player) e.getWhoClicked(), "anvil.not-working", true);
             }

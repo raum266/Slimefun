@@ -6,14 +6,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.CSCoreLibPlugin.general.Math.DoubleHandler;
-import me.mrCookieSlime.Slimefun.SlimefunStartup;
-import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.SlimefunItem;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
-import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
-import me.mrCookieSlime.Slimefun.api.inventory.UniversalBlockMenu;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -21,9 +13,18 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.inventory.ItemStack;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+
+import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
+import me.mrCookieSlime.CSCoreLibPlugin.general.Math.DoubleHandler;
+import me.mrCookieSlime.Slimefun.SlimefunStartup;
+import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.SlimefunItem;
+import me.mrCookieSlime.Slimefun.api.inventory.BlockMenu;
+import me.mrCookieSlime.Slimefun.api.inventory.BlockMenuPreset;
+import me.mrCookieSlime.Slimefun.api.inventory.UniversalBlockMenu;
 
 public class BlockStorage {
 
@@ -138,8 +139,18 @@ public class BlockStorage {
 			if (file.getName().startsWith(w.getName()) && file.getName().endsWith(".sfi")) {
 				Location l = deserializeLocation(file.getName().replace(".sfi", ""));
 				Config cfg = new Config(file);
-				BlockMenuPreset preset = BlockMenuPreset.getPreset(cfg.getString("preset"));
-				inventories.put(l, new BlockMenu(preset, l, cfg));
+				try {
+					if (cfg.getString("preset") != null) {
+						BlockMenuPreset preset = BlockMenuPreset.getPreset(cfg.getString("preset"));
+						inventories.put(l, new BlockMenu(preset, l, cfg));
+					}
+					else {
+						BlockMenuPreset preset = BlockMenuPreset.getPreset(checkID(l));
+						inventories.put(l, new BlockMenu(preset, l, cfg));
+					}
+				}
+				catch(Exception x) {
+				}
 			}
 		}
 		
@@ -359,7 +370,14 @@ public class BlockStorage {
 		
 		if (destroy) {
 			if (storage.hasInventory(l)) storage.clearInventory(l);
-			if (storage.hasUniversalInventory(l)) storage.getUniversalInventory(l).save();
+			if (storage.hasUniversalInventory(l)) {
+				UniversalBlockMenu menu = storage.getUniversalInventory(l);
+				for (HumanEntity n: menu.toInventory().getViewers()) {
+					n.closeInventory();
+				}
+				
+				storage.getUniversalInventory(l).save();
+			}
 			if (ticking_chunks.containsKey(l.getChunk().toString())) {
 				Set<Block> blocks = ticking_chunks.get(l.getChunk().toString());
 				blocks.remove(l.getBlock());
@@ -478,8 +496,10 @@ public class BlockStorage {
 		return new HashSet<Block>(ticking_chunks.get(chunk));
 	}
 	
-	public void loadInventory(Location l, BlockMenuPreset preset) {
-		inventories.put(l, new BlockMenu(preset, l));
+	public BlockMenu loadInventory(Location l, BlockMenuPreset preset) {
+		BlockMenu menu = new BlockMenu(preset, l);
+		inventories.put(l, menu);
+		return menu;
 	}
 	
 	public void loadUniversalInventory(BlockMenuPreset preset) {
@@ -487,6 +507,11 @@ public class BlockStorage {
 	}
 	
 	public void clearInventory(Location l) {
+		BlockMenu menu = getInventory(l);
+		for (HumanEntity n: menu.toInventory().getViewers()) {
+			n.closeInventory();
+		}
+		
 		inventories.get(l).delete(l);
 		inventories.remove(l);
 	}
@@ -518,9 +543,9 @@ public class BlockStorage {
 	
 	public static BlockMenu getInventory(Location l) {
 		BlockStorage storage = getStorage(l.getWorld());
-		if (storage == null || !storage.hasInventory(l)) return null;
-		BlockMenu menu = storage.inventories.get(l);
-		return menu;
+		if (storage == null) return null;
+		if (!storage.hasInventory(l)) return storage.loadInventory(l, BlockMenuPreset.getPreset(checkID(l)));
+		else return storage.inventories.get(l);
 	}
 	
 	public static JSONParser getParser() {
