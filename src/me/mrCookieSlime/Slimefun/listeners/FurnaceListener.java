@@ -6,6 +6,7 @@ import me.mrCookieSlime.Slimefun.SlimefunStartup;
 import me.mrCookieSlime.Slimefun.Objects.SlimefunItem.EnhancedFurnace;
 import me.mrCookieSlime.Slimefun.api.BlockStorage;
 
+import org.bukkit.Material;
 import org.bukkit.block.Furnace;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -36,6 +37,11 @@ public class FurnaceListener implements Listener {
 			int amount = f.getInventory().getSmelting().getType().toString().endsWith("_ORE") ? furnace.getOutput(): 1;
 			ItemStack output = RecipeCalculator.getSmeltedOutput(f.getInventory().getSmelting().getType());
 			ItemStack result = f.getInventory().getResult();
+			
+			
+			if ( output != null && output.getType() == Material.SPONGE ) // No duplicating Sponges
+				return;
+			
 			if (result != null) result = result.clone();
 			f.getInventory().setResult(null);
 			if (result != null) e.setResult(new CustomItem(result, result.getAmount() + amount > result.getMaxStackSize() ? result.getMaxStackSize(): result.getAmount() + amount));

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
+import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Variable;
 import me.mrCookieSlime.Slimefun.SlimefunStartup;
 import me.mrCookieSlime.Slimefun.GPS.GPSNetwork;
 import me.mrCookieSlime.Slimefun.Objects.Category;
@@ -61,7 +62,9 @@ public class Slimefun {
 		SlimefunItem sfItem = SlimefunItem.getByItem(item);
 		if (sfItem == null) {
 			if (SlimefunItem.isDisabled(item)) {
-				if (message) Messages.local.sendTranslation(p, "messages.disabled-item", true);
+				if (message) {
+					Messages.local.sendTranslation(p, "messages.disabled-item", true, new Variable("%name%", sfItem.getName()) );
+				}
 				return false;
 			}
 			else return true;
@@ -70,7 +73,10 @@ public class Slimefun {
 			if (sfItem.getResearch() == null) return true;
 			else if (sfItem.getResearch().hasUnlocked(p)) return true;
 			else {
-				if (message) Messages.local.sendTranslation(p, "messages.not-researched", true);
+				
+				if (message) {
+					Messages.local.sendTranslation(p, "messages.not-researched", true, new Variable("%name%", sfItem.getName()));
+				}
 				return false;
 			}
 		}

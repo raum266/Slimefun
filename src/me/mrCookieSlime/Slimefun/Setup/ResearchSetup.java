@@ -80,7 +80,7 @@ public class ResearchSetup {
 	    Slimefun.registerResearch(new Research(71, "Talisman of the Knight", 20), SlimefunItems.TALISMAN_KNIGHT);
 	    Slimefun.registerResearch(new Research(72, "Shiny Iron", 11), SlimefunItems.GILDED_IRON);
 	    Slimefun.registerResearch(new Research(73, "Fake Gem", 17), SlimefunItems.SYNTHETIC_EMERALD);
-	    Slimefun.registerResearch(new Research(74, "Chainmail Armor", 8), new ItemStack(Material.CHAINMAIL_HELMET), new ItemStack(Material.CHAINMAIL_CHESTPLATE), new ItemStack(Material.CHAINMAIL_LEGGINGS), new ItemStack(Material.CHAINMAIL_BOOTS));
+//	    Slimefun.registerResearch(new Research(74, "Chainmail Armor", 8), new ItemStack(Material.CHAINMAIL_HELMET), new ItemStack(Material.CHAINMAIL_CHESTPLATE), new ItemStack(Material.CHAINMAIL_LEGGINGS), new ItemStack(Material.CHAINMAIL_BOOTS));
 	    Slimefun.registerResearch(new Research(75, "Talisman of the Whirlwind", 19), SlimefunItems.TALISMAN_WHIRLWIND);
 	    Slimefun.registerResearch(new Research(76, "Talisman of the Wizard", 22), SlimefunItems.TALISMAN_WIZARD);
 	    Slimefun.registerResearch(new Research(77, "Lumber Axe", 21), SlimefunItems.LUMBER_AXE);
