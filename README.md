@@ -5,7 +5,7 @@ Hello and welcome to Slimefun 4's GitHub Page.
 Slimefun 4 is the 4th of the big Updates to the revolutionary and game-changing Plugin [Slimefun](http://dev.bukkit.org/bukkit-plugins/slimefun/)
 
 Slimefun 4 is licensed under 
-[Creative Commons Attribution-NonCommercial 3.0 Unported](https://github.com/TheBusyBiscuit/Slimefun4/blob/master/LICENSE)
+[GNU GPLv3](https://github.com/TheBusyBiscuit/Slimefun4/blob/master/LICENSE)
 
 ## Contributions
 
@@ -22,6 +22,11 @@ I will keep this list updated myself, please don't edit it yourself.
 
 * TheBusyBiscuit
 * John000708
+* st392
+* DeathlyPanda
+* BlackBeltPanda
+* Poslovitch
+* alekso56
 
 ## Wiki
 
